@@ -1,0 +1,156 @@
+<view class="wrap">
+
+  <view class="hero">
+    <view class="hero-title">亲戚叫得准</view>
+    <view class="hero-sub">亲戚怎么称呼，点两下就知道</view>
+    <view class="hero-rule"></view>
+    <view class="hero-chips">
+      <text class="hero-chip">互称</text>
+      <text class="hero-chip">堂表分清</text>
+      <text class="hero-chip">长幼注明</text>
+    </view>
+  </view>
+
+  <!-- 性别切换 -->
+  <view class="sex-row">
+    <text class="sex-label">我是</text>
+    <view class="sex-opt {{selfSex === 'm' ? 'on' : ''}}" bindtap="switchSex" data-sex="m">男</view>
+    <view class="sex-opt {{selfSex === 'f' ? 'on' : ''}}" bindtap="switchSex" data-sex="f">女</view>
+  </view>
+
+  <!-- A / B 切换 -->
+  <view class="who-row">
+    <view class="who-tab {{who === 'a' ? 'on' : ''}}" bindtap="switchWho" data-who="a">
+      <view class="who-t">第一个人</view>
+      <view class="who-v">{{aLabel}}</view>
+    </view>
+    <view class="who-tab {{who === 'b' ? 'on' : ''}}" bindtap="switchWho" data-who="b">
+      <view class="who-t">第二个人</view>
+      <view class="who-v">{{bLabel}}</view>
+    </view>
+  </view>
+
+  <!-- 当前正在构建的关系 -->
+  <view class="card">
+    <view class="card-title">正在设置「第{{who === 'a' ? '一' : '二'}}个人」</view>
+
+    <!-- 关系链 -->
+    <view class="chain">
+      <block wx:for="{{chain}}" wx:key="depth">
+        <text class="chain-arrow" wx:if="{{index > 0}}">→</text>
+        <text class="chain-node {{item.now ? 'now' : ''}}"
+              bindtap="onCrumbTap" data-depth="{{item.depth}}">{{item.text}}</text>
+      </block>
+    </view>
+
+    <!-- 当前称谓 -->
+    <view class="now" wx:if="{{nowTerm}}">
+      <view class="now-desc">{{nowDesc}}（相对「我」）</view>
+      <view class="now-main">{{nowTerm.main}}</view>
+      <view class="now-age" wx:if="{{nowTerm.age}}">
+        {{nowTerm.age.when}}：{{nowTerm.age.main}}<text wx:if="{{nowTerm.age.alts.length}}"> / {{nowTerm.age.alts.join(' / ')}}</text>
+      </view>
+      <view class="now-alts" wx:if="{{nowTerm.alts.length}}">
+        其他称呼：{{nowTerm.alts.join(' / ')}}
+      </view>
+    </view>
+    <view class="tip" wx:else>就是我自己（起点）——想问他叫什么，切到另一个标签页设置他的关系</view>
+
+    <!-- 下一步 -->
+    <view class="steps">
+      <view class="step" wx:for="{{steps}}" wx:key="token"
+            bindtap="onStepTap" data-token="{{item.token}}">
+        <view class="step-l">{{item.label}}</view>
+        <view class="step-h" wx:if="{{item.hint}}">{{item.hint}}</view>
+      </view>
+    </view>
+
+    <view class="link-row" wx:if="{{chain.length > 1}}">
+      <view class="undo" bindtap="undo">← 退回上一层</view>
+      <view class="undo" bindtap="backToMe">回到起点（就是我自己）</view>
+    </view>
+  </view>
+
+  <!-- 示例 -->
+  <view class="card" wx:if="{{hint === 'example'}}">
+    <view class="card-title">不知道点哪儿？试试这些</view>
+    <view class="ex-row">
+      <view class="ex" wx:for="{{examples}}" wx:key="path"
+            bindtap="useExample" data-path="{{item.path}}">
+        <view class="ex-l">{{item.label}}</view>
+        <view class="ex-n">{{item.note}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提示 -->
+  <view class="card" wx:if="{{hint === 'same'}}">
+    <view class="tip">两个角色是同一个人，换一个试试</view>
+  </view>
+
+  <!-- 结果 -->
+  <block wx:if="{{result}}">
+    <view class="card">
+      <view class="relation-badge">互称</view>
+
+      <view class="answer">
+        <view class="answer-who">
+          <view class="answer-name">{{result.aMain}}</view>
+          <view class="answer-desc">{{result.aDesc}}</view>
+          <view class="answer-arrow">称对方 →</view>
+        </view>
+        <view class="answer-main">{{result.aCallsB}}</view>
+        <view class="answer-age-line" wx:if="{{result.aAge}}">
+          {{result.aAge.when}}：{{result.aAge.main}}<text wx:if="{{result.aAge.alts.length}}"> / {{result.aAge.alts.join(' / ')}}</text>
+        </view>
+        <view class="answer-alts-line" wx:if="{{result.aAlts.length}}">
+          其他称呼：{{result.aAlts.join(' / ')}}
+        </view>
+
+      </view>
+
+      <view class="answer">
+        <view class="answer-who">
+          <view class="answer-name">{{result.bMain}}</view>
+          <view class="answer-desc">{{result.bDesc}}</view>
+          <view class="answer-arrow">称对方 →</view>
+        </view>
+        <view class="answer-main">{{result.bCallsA}}</view>
+        <view class="answer-age-line" wx:if="{{result.bAge}}">
+          {{result.bAge.when}}：{{result.bAge.main}}<text wx:if="{{result.bAge.alts.length}}"> / {{result.bAge.alts.join(' / ')}}</text>
+        </view>
+        <view class="answer-alts-line" wx:if="{{result.bAlts.length}}">
+          其他称呼：{{result.bAlts.join(' / ')}}
+        </view>
+
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">称谓小注</view>
+
+      <view class="note-item" wx:if="{{result.aDesc}}">「{{result.aMain}}」在我的家族里是：{{result.aDesc}}</view>
+      <view class="note-item" wx:if="{{result.bDesc}}">「{{result.bMain}}」在我的家族里是：{{result.bDesc}}</view>
+
+      <view class="cite" wx:if="{{result.aCite}}">
+        <view class="cite-head">为什么叫「{{result.aCallsB}}」</view>
+        <view class="cite-quote" wx:if="{{result.aCite.quote}}"><text>{{result.aCite.quote}}</text><text class="cite-src">——《{{result.aCite.src}}》</text></view>
+        <view class="cite-gloss">{{result.aCite.gloss}}</view>
+      </view>
+
+      <view class="cite" wx:if="{{result.bCite && result.bCallsA !== result.aCallsB}}">
+        <view class="cite-head">为什么叫「{{result.bCallsA}}」</view>
+        <view class="cite-quote" wx:if="{{result.bCite.quote}}"><text>{{result.bCite.quote}}</text><text class="cite-src">——《{{result.bCite.src}}》</text></view>
+        <view class="cite-gloss">{{result.bCite.gloss}}</view>
+      </view>
+
+      <view class="note-item note-tail">长幼不同，叫法也不同（如伯父 / 叔父）。路径里没有长幼信息时会单独注明成立条件，不当成同义词并列。</view>
+    </view>
+
+    <view class="btn-row">
+      <view class="btn" bindtap="clearOne">清空当前</view>
+      <view class="btn" bindtap="clearAll">全部重来</view>
+    </view>
+  </block>
+
+</view>

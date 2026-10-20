@@ -1,0 +1,10 @@
+# 微信开发者工具的本地配置，因人而异，不进仓库
+project.private.config.json
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 日志
+*.log
+debug.log
